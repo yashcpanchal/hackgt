@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Notion Highlighter",
+  "version": "1.3.0",
+  "description": "Highlight and organize text in Notion pages",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "contextMenus",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.notion.so/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.notion.so/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css"],
+      "matches": ["*://*.notion.so/*"]
+    }
+  ],
+  "action": {
+    "default_title": "Notion Highlighter",
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "highlight-selection": {
+      "suggested_key": {
+        "default": "Alt+H",
+        "mac": "Alt+H"
+      },
+      "description": "Highlight current selection"
+    },
+    "clear-highlights": {
+      "suggested_key": {
+        "default": "Alt+Shift+C",
+        "mac": "Alt+Shift+C"
+      },
+      "description": "Clear all highlights"
+    }
+  }
+}
