@@ -7,7 +7,27 @@
   --search-highlight-border: rgba(30, 136, 229, 0.5);
 }
 
-/* Base highlight style - Now more forceful */
+/* Overlay-based highlight styles */
+.notion-highlight-overlay {
+  background-color: var(--highlight-color) !important;
+  border-bottom: 2px solid var(--highlight-border) !important;
+  border-radius: 3px !important;
+  pointer-events: none !important;
+  z-index: 10000 !important;
+  position: absolute !important;
+}
+
+/* Search highlight overlay style */
+.search-highlight-overlay {
+  background-color: var(--search-highlight-color) !important;
+  border-bottom: 2px solid var(--search-highlight-border) !important;
+  border-radius: 3px !important;
+  pointer-events: none !important;
+  z-index: 10001 !important;
+  position: absolute !important;
+}
+
+/* Legacy styles for backwards compatibility (in case any old DOM highlights remain) */
 .notion-highlight {
   background-color: var(--highlight-color) !important;
   color: inherit !important;
@@ -19,16 +39,11 @@
   -webkit-box-decoration-break: clone !important;
 }
 
-/* THIS IS THE KEY FIX: 
-  It forces any text elements *inside* our highlight to have a transparent background, 
-  allowing our highlight color to show through from behind.
-*/
 .notion-highlight * {
   background-color: transparent !important;
   color: inherit !important;
 }
 
-/* Search highlight style */
 .search-highlight {
   background-color: var(--search-highlight-color) !important;
   border-bottom: 2px solid var(--search-highlight-border) !important;
