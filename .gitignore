@@ -1,0 +1,60 @@
+# --- Python / FastAPI backend ---
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+env/
+venv.bak/
+
+# Environment variables & secrets
+*.env
+.env.local
+.env.production
+secrets.json
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
+
+# Python cache / logs
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+
+# Testing
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+*.py,cover
+
+# PyInstaller
+*.spec
+
+# Jupyter Notebook checkpoints (if you use notebooks for testing)
+.ipynb_checkpoints
+
+# --- Chrome Extension ---
+# No specific ignores unless you have build steps
+# If using bundlers (e.g., Webpack, Vite):
+node_modules/
+dist/
+*.lock
+
+# --- OS / Editor files ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.idea/
+.vscode/
