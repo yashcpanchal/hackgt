@@ -40,20 +40,24 @@
       // Set up observers to handle dynamic content loading
       setupMutationObserver();
       setupResizeObserver();
+
+      // Set up periodic highlight validation
+      setupPeriodicValidation();
     }
   
     function addEventListeners() {
       chrome.runtime.onMessage.addListener(handleMessage);
       document.addEventListener('keydown', handleKeyDown, true);
       document.addEventListener('dblclick', handleDoubleClick, true);
-      // Throttle scroll events to prevent performance issues
-      let scrollTimer = null;
+      // Use requestAnimationFrame for smooth scroll updates
+      let isScrollUpdating = false;
       document.addEventListener('scroll', () => {
-        if (scrollTimer) return; // Throttle instead of debounce
-        scrollTimer = setTimeout(() => {
+        if (isScrollUpdating) return;
+        isScrollUpdating = true;
+        requestAnimationFrame(() => {
           updateOverlayPositions();
-          scrollTimer = null;
-        }, 100);
+          isScrollUpdating = false;
+        });
       }, true);
     }
 
@@ -86,6 +90,10 @@
         if (document.body) {
           document.body.appendChild(overlayContainer);
           console.log('Overlay container created successfully');
+
+          // Add a class to prevent it from being removed by other scripts
+          overlayContainer.setAttribute('data-extension', 'notion-highlighter');
+          overlayContainer.setAttribute('data-protected', 'true');
         } else {
           console.error('Document body not available for overlay container');
           overlayContainer = null;
@@ -107,8 +115,8 @@
         top: ${rect.top + window.scrollY}px;
         width: ${rect.width}px;
         height: ${rect.height}px;
-        background-color: ${isSearch ? 'rgba(100, 181, 246, 0.4)' : 'rgba(255, 240, 138, 0.5)'};
-        border-bottom: 2px solid ${isSearch ? 'rgba(30, 136, 229, 0.5)' : 'rgba(255, 201, 25, 0.6)'};
+        background-color: ${isSearch ? 'rgba(255, 240, 138, 0.6)' : 'rgba(255, 240, 138, 0.5)'};
+        border-bottom: 2px solid ${isSearch ? 'rgba(255, 201, 25, 0.8)' : 'rgba(255, 201, 25, 0.6)'};
         border-radius: 3px;
         pointer-events: none;
         z-index: 1;
@@ -119,8 +127,17 @@
 
     function updateOverlayPositions() {
       if (!overlayContainer) {
-        console.warn('Overlay container not found during position update');
-        return;
+        console.warn('Overlay container not found during position update, recreating...');
+        createOverlayContainer();
+        if (!overlayContainer) return;
+      }
+
+      // Check if overlay container is still in the DOM
+      if (!document.body.contains(overlayContainer)) {
+        console.warn('Overlay container was removed from DOM, recreating...');
+        overlayContainer = null;
+        createOverlayContainer();
+        if (!overlayContainer) return;
       }
 
       // Update persistent highlights
@@ -198,16 +215,32 @@
     function setupResizeObserver() {
       if (!window.ResizeObserver) return;
 
-      let resizeTimer = null;
+      let isResizeUpdating = false;
       resizeObserver = new ResizeObserver(() => {
-        if (resizeTimer) return; // Throttle resize events
-        resizeTimer = setTimeout(() => {
+        if (isResizeUpdating) return;
+        isResizeUpdating = true;
+        requestAnimationFrame(() => {
           updateOverlayPositions();
-          resizeTimer = null;
-        }, 250);
+          isResizeUpdating = false;
+        });
       });
 
       resizeObserver.observe(document.body);
+    }
+
+    function setupPeriodicValidation() {
+      // Check highlights every 3 seconds to ensure they're still visible
+      setInterval(() => {
+        if (!overlayContainer || persistentHighlights.size === 0) return;
+
+        const visibleOverlays = overlayContainer.querySelectorAll(`.${HIGHLIGHT_CLASS}`);
+
+        // If we have highlights stored but no visible overlays, restore them
+        if (persistentHighlights.size > 0 && visibleOverlays.length === 0) {
+          console.log('Highlights lost, restoring...');
+          updateOverlayPositions();
+        }
+      }, 3000);
     }
 
     // --- DOUBLE CLICK HANDLER ---
@@ -243,17 +276,29 @@
           return; // Don't process mutations caused by our overlays
         }
 
+        // Check if any significant content changes occurred
+        const hasSignificantChanges = mutations.some(mutation => {
+          return mutation.type === 'childList' &&
+                 (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) &&
+                 Array.from(mutation.addedNodes).some(node =>
+                   node.nodeType === Node.ELEMENT_NODE &&
+                   (node.classList?.contains('notion-page-content') ||
+                    node.querySelector?.('[data-block-id]'))
+                 );
+        });
+
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           if (window.location.href !== lastUrl) {
             lastUrl = window.location.href;
             console.log('URL changed, reloading highlights.');
             loadHighlights();
-          } else {
-            // Only update positions for existing highlights, don't reapply
+          } else if (hasSignificantChanges) {
+            // Only reapply highlights if there were significant content changes
+            console.log('Significant content changes detected, updating highlights...');
             updateOverlayPositions();
           }
-        }, 1000); // Increased debounce to reduce frequency
+        }, 500); // Reduced debounce for better responsiveness
       });
   
       // Observe only the Notion content area, not the entire body

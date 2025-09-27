@@ -3,8 +3,8 @@
 :root {
   --highlight-color: rgba(255, 240, 138, 0.5);
   --highlight-border: rgba(255, 201, 25, 0.6);
-  --search-highlight-color: rgba(100, 181, 246, 0.4);
-  --search-highlight-border: rgba(30, 136, 229, 0.5);
+  --search-highlight-color: rgba(255, 240, 138, 0.6);
+  --search-highlight-border: rgba(255, 201, 25, 0.8);
 }
 
 /* Overlay-based highlight styles */
@@ -56,8 +56,8 @@
 .notion-dark-theme {
   --highlight-color: rgba(255, 212, 0, 0.3);
   --highlight-border: rgba(255, 212, 0, 0.4);
-  --search-highlight-color: rgba(100, 181, 246, 0.25);
-  --search-highlight-border: rgba(30, 136, 229, 0.4);
+  --search-highlight-color: rgba(255, 212, 0, 0.4);
+  --search-highlight-border: rgba(255, 212, 0, 0.6);
 }
 
 /* Notification HUD */
