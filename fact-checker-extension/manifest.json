@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Notion Highlighter",
-  "version": "1.3.0",
-  "description": "Highlight and organize text in Notion pages",
+  "version": "2.0.0",
+  "description": "Advanced text highlighting for Notion with persistent overlay system",
   "permissions": [
     "activeTab",
     "scripting",
@@ -14,12 +14,12 @@
     "*://*.notion.so/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "dist/background.js"
   },
   "content_scripts": [
     {
       "matches": ["*://*.notion.so/*"],
-      "js": ["content.js"],
+      "js": ["dist/content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle",
       "all_frames": true
