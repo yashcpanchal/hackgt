@@ -45,7 +45,7 @@ from sentence_pre import is_claim, get_openai_client
 import requests
 
 if __name__ == "__main__":
-    sentence = "Abraham Lincoln was the 16th president of the United States."
+    sentence = "The Atlanta Falcons are a team in the NFL"
     k = 3
 
     url = "http://localhost:8000/check_fact"
