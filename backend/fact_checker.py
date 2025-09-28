@@ -9,8 +9,28 @@ from sentence_pre import compute_triplets, get_openai_client, extract_k_text_tri
 import json
 import PyPDF2
 import io
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Fact Checker API")
+
+# Allow Notion (or all origins during dev)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.notion.so",  # allow Notion
+        "http://localhost:3000",  # your local frontend (if testing locally)
+        "chrome-extension://*",   # allow your extension
+        "*"                       # (dev only) allow everything
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class CheckFactRequest(BaseModel):
+    sentence: str
+    k: int = 5
 
 def fact_check_with_context(claim: str, context: str):
     client = OpenAI()
@@ -72,7 +92,9 @@ def extract_text_from_pdf(file: UploadFile):
     return text
 
 @app.post("/check_fact")
-def check_fact(sentence, k=5):
+def check_fact(request: CheckFactRequest):
+    sentence = request.sentence
+    k = request.k
     client = get_openai_client()
     if is_claim(sentence, client) == False:
         return {
