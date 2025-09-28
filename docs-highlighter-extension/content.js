@@ -60,8 +60,14 @@ async function sendToBackend(text, source) {
           // Display a more detailed result
           const answer = data.answer ? data.answer.toString().toUpperCase() : "NO ANSWER";
           const snippet = data.snippet || "No specific snippet found.";
-          const resultMessage = `${answer}: ${snippet}`;
-          showHUD(resultMessage, 6000); // Show for 6 seconds
+          let resultMessage = `${answer}: ${snippet}`;
+
+          if (data.sources && data.sources.length > 0) {
+              const source = data.sources[0];
+              resultMessage += ` <a href="${source.link}" target="_blank">(${source.name})</a>`;
+          }
+
+          showHUD(resultMessage, 10000); // Show for 10 seconds
 
       } catch (error) {
           console.error('Error contacting Wikipedia backend:', error);
@@ -140,12 +146,12 @@ async function handleTextbookCheck(sentence) {
       
       // Handles keyboard/mouse shortcuts
       document.addEventListener('keydown', handleKeyDown, true);
-      document.addEventListener('dblclick', handleDoubleClick, true);
+
 
       // Use event delegation on the overlay container for better performance
       if (overlayContainer) {
           overlayContainer.addEventListener('mouseover', handleHighlightHover);
-          overlayContainer.addEventListener('mouseleave', handleHighlightLeave, true);
+          overlayContainer.addEventListener('mouseleave', handleHighlightLeave);
       }
 
       // Add debounced listeners for scroll and resize to reposition highlights
@@ -262,6 +268,9 @@ async function handleTextbookCheck(sentence) {
           radialMenu.appendChild(button);
       });
 
+      radialMenu.addEventListener('mouseenter', handleMenuEnter);
+      radialMenu.addEventListener('mouseleave', handleHighlightLeave);
+
       document.body.appendChild(radialMenu);
       
       // Add a listener to hide the menu if user clicks away
@@ -276,6 +285,10 @@ async function handleTextbookCheck(sentence) {
       radialMenu = null;
   }
   
+  function handleMenuEnter() {
+      clearTimeout(hideMenuTimer);
+  }
+  
   function handleHighlightHover(event) {
       if (event.target.classList.contains(HIGHLIGHT_CLASS)) {
           showRadialMenu(event);
@@ -284,7 +297,7 @@ async function handleTextbookCheck(sentence) {
 
   function handleHighlightLeave() {
       // Hide the menu with a delay to allow moving mouse onto the menu itself
-      hideMenuTimer = setTimeout(hideRadialMenu, 300);
+      hideMenuTimer = setTimeout(hideRadialMenu, 1000);
   }
   
   // --- USER ACTIONS & DATA ---
@@ -387,14 +400,14 @@ async function handleTextbookCheck(sentence) {
       setTimeout(highlightSelection, 50);
   }
   
-  function showHUD(message, duration = 2000) {
+  function showHUD(message, duration = 10000) {
       let hud = document.getElementById('notion-highlighter-hud');
       if (!hud) {
           hud = document.createElement('div');
           hud.id = 'notion-highlighter-hud';
           document.body.appendChild(hud);
       }
-      hud.textContent = message;
+      hud.innerHTML = message;
       hud.classList.add('visible');
       setTimeout(() => hud.classList.remove('visible'), duration);
   }

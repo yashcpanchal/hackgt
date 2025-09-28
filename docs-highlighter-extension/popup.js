@@ -10,13 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
   async function sendMessageToActiveTab(message) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && tab.url.includes('notion.so')) {
-      try {
-        await chrome.tabs.sendMessage(tab.id, message);
-        window.close();
-      } catch (error) {
-        console.error(`Error sending message: ${message.type}`, error);
-        alert('Could not connect to the Notion page. Please refresh the page and try again.');
-      }
+      // Add a small delay to give the content script time to initialize
+      setTimeout(async () => {
+        try {
+          await chrome.tabs.sendMessage(tab.id, message);
+          window.close();
+        } catch (error) {
+          console.error(`Error sending message: ${message.type}`, error);
+          alert('Could not connect to the Notion page. Please refresh the page and try again.');
+        }
+      }, 100);
     } else {
       alert('This extension only works on notion.so pages.');
     }
