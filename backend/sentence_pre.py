@@ -25,8 +25,14 @@ def get_openai_client() -> openai.OpenAI:
 def is_claim(sentence: str, client: openai.OpenAI) -> bool:
     # This function remains the same
     prompt_content = f'''
-        You are a highly accurate claim detection system. Your task is to analyze a sentence and determine if it makes a factual assertion or claim that can be verified. Remember that a factual assertion is something that can be proven true or false that doesn't display any sort of bias or opinion or doesn't give something an unproven level of importance.
+        You are a highly accurate claim detection system. Your task is to analyze a sentence and determine if it makes a factual assertion or claim that can be verified.
         Respond ONLY with a JSON object containing a single key "is_claim" with a boolean value.
+
+        Examples:
+        Sentence: "The sky is blue." -> {{"is_claim": true}}
+        Sentence: "I am a pizza." -> {{"is_claim": false}}
+        Sentence: "Mergesort has a time complexity of O(n)." -> {{"is_claim": true}}
+
         TASK:
         Sentence: "{sentence}" ->
     '''
@@ -52,6 +58,7 @@ def extract_k_text_triplets(sentence: str, k: int, client: openai.OpenAI) -> Lis
         f"You are a knowledge graph expert. Your task is to extract up to {k} different, plausible triplets from the user's sentence. "
         "Each triplet must represent a distinct fact. "
         "**Crucially, the 'subject' of the triplet MUST BE a specific named entity** (like a person, place, or organization). "
+        "The subject should be the main entity discussed in the sentence. "
         "Respond ONLY with a JSON object with a key 'triplets'. "
         "Each object must have three keys: 'subject' (string), 'object' (string), and 'relation_text' (the canonical English name of the Wikidata property, e.g., 'author', 'country of origin', 'instance of')."
     )
@@ -71,6 +78,29 @@ def extract_k_text_triplets(sentence: str, k: int, client: openai.OpenAI) -> Lis
     except (openai.APIError, json.JSONDecodeError) as e:
         print(f"Error extracting triplets: {e}")
         return []
+
+def extract_subject(sentence: str, client: openai.OpenAI) -> str:
+    """
+    Extracts the main subject from a sentence.
+    """
+    prompt = f'''
+    What is the main subject of the following sentence?
+    Sentence: "{sentence}"
+    Respond with only the subject. You must respond with only the name of the subject, and nothing else.
+    '''
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a subject extraction system."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content
+    except (openai.APIError) as e:
+        print(f"Error extracting subject: {e}")
+        return ""
+
 
 # --- Mapping and API Functions ---
 
@@ -148,13 +178,14 @@ def compute_triplets(sentence, k):
 
     if not entity_map:
         print("Could not load entity lookup file. Exiting.")
-        exit()
+        #exit()
 
     try:
         openai_client = get_openai_client()
         if not is_claim(sentence, openai_client):
             print(False)
-            exit()
+            return (False)
+            #exit()
 
         # Ask the AI for k distinct triplets
         text_triplets = extract_k_text_triplets(sentence, k, openai_client)
