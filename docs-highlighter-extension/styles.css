@@ -65,6 +65,15 @@
   transform: translateY(-20px);
 }
 
+.hud-link {
+  color: #8ab4f8; /* A nice, visible blue */
+  text-decoration: none;
+}
+
+.hud-link:hover {
+  text-decoration: underline;
+}
+
 #notion-highlighter-hud.visible {
   opacity: 1 !important;
   transform: translateY(0);

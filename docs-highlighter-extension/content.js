@@ -64,7 +64,7 @@ async function sendToBackend(text, source) {
 
           if (data.sources && data.sources.length > 0) {
               const source = data.sources[0];
-              resultMessage += ` <a href="${source.link}" target="_blank">(${source.name})</a>`;
+              resultMessage += ` <a class="hud-link" href="${source.link}" target="_blank">(${source.name})</a>`;
           }
 
           showHUD(resultMessage, 10000); // Show for 10 seconds
