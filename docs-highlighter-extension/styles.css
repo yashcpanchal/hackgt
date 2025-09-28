@@ -1,0 +1,72 @@
+/* Notion Fact-Checker Extension Styles */
+
+/* --- Highlight Overlay --- */
+.notion-fact-check-highlight {
+  background-color: rgba(173, 216, 230, 0.5); /* A lighter blue */
+  border-radius: 3px;
+  pointer-events: auto !important; /* MUST be auto to receive hover events */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.notion-fact-check-highlight:hover {
+  background-color: rgba(173, 216, 230, 0.8); /* Darken on hover */
+}
+
+/* --- Radial Menu (Simulated with CSS) --- */
+#cedar-radial-menu-container {
+  position: fixed; /* Fixed to the viewport for easy positioning */
+  z-index: 10000;
+  background-color: rgba(40, 40, 40, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translate(-50%, -110%); /* Position above and centered on cursor */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.radial-menu-item {
+  color: #f0f0f0;
+  background-color: transparent;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.radial-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* --- Notification HUD --- */
+#notion-highlighter-hud {
+  position: fixed !important;
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 2147483647 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 14px !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s, transform 0.3s;
+  transform: translateY(-20px);
+}
+
+#notion-highlighter-hud.visible {
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+

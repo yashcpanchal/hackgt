@@ -1,38 +1,35 @@
 {
   "manifest_version": 3,
-  "name": "Notion Highlighter",
+  "name": "Notion Fact-Checker",
   "version": "2.0.0",
-  "description": "Advanced text highlighting for Notion with persistent overlay system",
+  "description": "Fact-check assertions and explore topics in Notion.",
   "permissions": [
-    "activeTab",
-    "scripting",
     "storage",
     "contextMenus",
-    "tabs"
+    "activeTab"
   ],
   "host_permissions": [
     "*://*.notion.so/*"
   ],
   "background": {
-    "service_worker": "dist/background.js"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["*://*.notion.so/*"],
-      "js": ["dist/content.js"],
-      "css": ["styles.css"],
-      "run_at": "document_idle",
-      "all_frames": true
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["styles.css"],
-      "matches": ["*://*.notion.so/*"]
+      "matches": [
+        "*://*.notion.so/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "action": {
-    "default_title": "Notion Highlighter",
+    "default_title": "Notion Fact-Checker",
     "default_popup": "popup.html"
   },
   "commands": {
@@ -48,7 +45,8 @@
         "default": "Alt+Shift+C",
         "mac": "Alt+Shift+C"
       },
-      "description": "Clear all highlights"
+      "description": "Clear all highlights on the page"
     }
   }
 }
+
