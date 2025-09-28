@@ -30,6 +30,109 @@
       setTimeout(reapplyHighlights, 500);
   }
 
+  // In content.js
+
+// This function will now handle both types of requests
+async function sendToBackend(text, source) {
+  // The 'source' parameter will be 'wikipedia' or 'textbook'
+  
+  if (source === 'wikipedia') {
+      // --- WIKIPEDIA API CALL ---
+      const backendUrl = 'http://localhost:8000/check_fact';
+      console.log(`Sending to Wikipedia backend: "${text}"`);
+      showHUD('Checking Wikipedia...');
+
+      try {
+          // We can send the sentence as a URL parameter for a POST request
+          // FastAPI is smart enough to parse this
+          console.log("Sending to Wikipedia backend: ", text);
+          const response = await fetch(backendUrl, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sentence: text, k: 5 })
+        });
+          console.log("Response: ", response);
+          if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+          const data = await response.json();
+          console.log('Wikipedia response:', data);
+
+          // Display a more detailed result
+          const answer = data.answer ? data.answer.toString().toUpperCase() : "NO ANSWER";
+          const snippet = data.snippet || "No specific snippet found.";
+          const resultMessage = `${answer}: ${snippet}`;
+          showHUD(resultMessage, 6000); // Show for 6 seconds
+
+      } catch (error) {
+          console.error('Error contacting Wikipedia backend:', error);
+          showHUD('Error: Could not connect to the service.');
+      }
+
+  } else if (source === 'textbook') {
+      // --- TEXTBOOK API CALL (see next section) ---
+      // We will handle this separately
+      handleTextbookCheck(text);
+  }
+}
+
+async function handleTextbookCheck(sentence) {
+  const backendUrl = "http://localhost:8000/check_fact_with_pdf";
+
+  // Ask user to pick a PDF
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/pdf";
+  input.style.display = "none";
+  document.body.appendChild(input);
+
+  return new Promise((resolve) => {
+      input.onchange = async (event) => {
+          const file = event.target.files[0];
+          if (!file) {
+              showHUD("No PDF selected.");
+              resolve();
+              return;
+          }
+
+          const formData = new FormData();
+          formData.append("sentence", sentence);
+          formData.append("file", file);
+
+          showHUD("Checking against PDF...");
+
+          try {
+              const response = await fetch(backendUrl, {
+                  method: "POST",
+                  body: formData,
+              });
+
+              if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+              const data = await response.json();
+              console.log("PDF Fact-Check response:", data);
+
+              const answer = data.answer ? data.answer.toString().toUpperCase() : "NO ANSWER";
+              const snippet = data.snippet || "No snippet found.";
+              const resultMessage = `${answer}: ${snippet}`;
+
+              showHUD(resultMessage, 6000);
+              resolve(data);
+
+          } catch (error) {
+              console.error("Error contacting PDF backend:", error);
+              showHUD("Error: Could not connect to the service.");
+              resolve();
+          } finally {
+              input.remove(); // clean up
+          }
+      };
+
+      // trigger file picker
+      input.click();
+  });
+}
+
+
   // --- EVENT LISTENERS ---
   function addEventListeners() {
       // Listens for messages from background script/popup
@@ -142,8 +245,8 @@
       
       // Define menu items
       const items = [
-          { label: 'Fact Check (Wikipedia)', action: () => console.log(`WIKIPEDIA CHECK on: "${highlightText}"`) },
-          { label: 'Fact Check (Textbook)', action: () => console.log(`TEXTBOOK CHECK on: "${highlightText}"`) },
+        { label: 'Fact Check (Wikipedia)', action: () => sendToBackend(highlightText, 'wikipedia') },
+        { label: 'Fact Check (Textbook)', action: () => sendToBackend(highlightText, 'textbook') },
       ];
       
       // Create and append button for each item
@@ -302,5 +405,7 @@
   } else {
       init();
   }
+
+  
 })();
 
